@@ -1,7 +1,7 @@
 // ============================================
 // 环境变量加载 - 必须在所有其他导入之前
 // ============================================
-
+import serverless from "serverless-http";
 import dotenv from "dotenv";
 import { resolve } from "path";
 import { existsSync } from "fs";
@@ -917,4 +917,4 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-module.exports = app;
+module.exports = serverless(app);
