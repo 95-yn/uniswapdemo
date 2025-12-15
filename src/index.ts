@@ -21,29 +21,6 @@ if (!existsSync(envPath)) {
 const requiredEnvVars = ["RPC_URL", "POOL_ADDRESS"];
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
 
-if (missingEnvVars.length > 0) {
-  console.warn(
-    `⚠️  以下环境变量未设置，将使用默认值: ${missingEnvVars.join(", ")}`
-  );
-}
-
-// 在启动时显示环境变量配置（隐藏敏感信息）
-console.log("\n📋 环境变量配置:");
-console.log(`   PORT: ${process.env.PORT || "3000 (默认)"}`);
-console.log(
-  `   RPC_URL: ${process.env.RPC_URL || "https://eth.llamarpc.com (默认)"}`
-);
-console.log(
-  `   POOL_ADDRESS: ${
-    process.env.POOL_ADDRESS ||
-    "0xc6962004f452be9203591991d15f6b388e09e8d0 (默认)"
-  }`
-);
-console.log(
-  `   DATABASE_URL: ${process.env.DATABASE_URL ? "已设置" : "未设置"}`
-);
-console.log("");
-
 import express, { Request, Response, NextFunction } from "express";
 import { getEventListener } from "./collectors/eventListener";
 
