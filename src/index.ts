@@ -59,7 +59,7 @@ import { SchedulerService } from "./services/schedulerService";
 import { getMetricsService } from "./services/metricsService";
 import { getIntegrityService } from "./services/integrityService";
 
-const app = express();
+const app: express.Application = express();
 const router = express.Router();
 const eventListener = getEventListener();
 
@@ -207,15 +207,6 @@ async function initializeTokenInfo(
     throw error;
   }
 }
-
-// 简单的错误处理中间件
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  const status = err.statusCode || err.status || 500;
-  res.status(status).json({
-    error: err.message || "Internal Server Error",
-  });
-  console.error("Error:", err);
-});
 
 // 健康检查
 router.get("/health", async (req: Request, res: Response) => {
@@ -486,6 +477,15 @@ router.get("/api/query-performance", async (req: Request, res: Response) => {
 
 // 使用路由
 app.use(router);
+
+// 错误处理中间件（必须放在所有路由之后）
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  const status = err.statusCode || err.status || 500;
+  res.status(status).json({
+    error: err.message || "Internal Server Error",
+  });
+  console.error("Error:", err);
+});
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;

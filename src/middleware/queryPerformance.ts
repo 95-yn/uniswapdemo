@@ -1,5 +1,4 @@
 // 查询性能监控中间件
-import { Context, Next } from "koa";
 import sql from "../storage/supabaseClient";
 import crypto from "crypto";
 
@@ -62,4 +61,3 @@ export function withQueryPerformance<T>(
       throw error;
     });
 }
-
