@@ -44,11 +44,7 @@ console.log(
 );
 console.log("");
 
-// Polyfill for Node.js v24+ compatibility
-import "./polyfill";
-
-import Koa from "koa";
-import Router from "@koa/router";
+import express, { Request, Response, NextFunction } from "express";
 import { getEventListener } from "./collectors/eventListener";
 
 import { SwapProcessor } from "./processors/swapProcessor";
@@ -63,9 +59,13 @@ import { SchedulerService } from "./services/schedulerService";
 import { getMetricsService } from "./services/metricsService";
 import { getIntegrityService } from "./services/integrityService";
 
-const app = new Koa();
-const router = new Router();
+const app = express();
+const router = express.Router();
 const eventListener = getEventListener();
+
+// Express 中间件
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Pool 合约 ABI（用于获取 token0, token1）
 const POOL_ABI = [
@@ -208,146 +208,138 @@ async function initializeTokenInfo(
   }
 }
 
-// 简单的错误处理
-app.use(async (ctx: any, next: () => Promise<any>) => {
-  try {
-    await next();
-  } catch (err: any) {
-    ctx.status = err.statusCode || err.status || 500;
-    ctx.body = {
-      error: err.message || "Internal Server Error",
-    };
-    console.error("Error:", err);
-  }
+// 简单的错误处理中间件
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  const status = err.statusCode || err.status || 500;
+  res.status(status).json({
+    error: err.message || "Internal Server Error",
+  });
+  console.error("Error:", err);
 });
 
 // 健康检查
-router.get("/health", async (ctx: any) => {
-  ctx.body = {
+router.get("/health", async (req: Request, res: Response) => {
+  res.json({
     status: "ok",
     uptime: process.uptime(),
-  };
+  });
 });
 
 // 获取监听状态
-router.get("/api/uniswap-v3/status", async (ctx: any) => {
-  ctx.body = {
+router.get("/api/uniswap-v3/status", async (req: Request, res: Response) => {
+  res.json({
     success: true,
     data: eventListener.getListeningStatus(),
-  };
+  });
 });
 
 // 获取用户统计
-router.get("/api/user-stats/:address", async (ctx: any) => {
-  const { address } = ctx.params;
+router.get("/api/user-stats/:address", async (req: Request, res: Response) => {
+  const { address } = req.params;
   const { getUserStats } = await import("./storage/userStatsRepository");
   try {
     const stats = await getUserStats(address);
-    ctx.body = {
+    res.json({
       success: true,
       data: stats,
-    };
+    });
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "获取用户统计失败",
-    };
+    });
   }
 });
 
 // 获取所有用户统计（按交易量排序）
-router.get("/api/user-stats", async (ctx: any) => {
-  const limit = parseInt(ctx.query.limit as string) || 100;
+router.get("/api/user-stats", async (req: Request, res: Response) => {
+  const limit = parseInt(req.query.limit as string) || 100;
   const { getAllUserStats } = await import("./storage/userStatsRepository");
   try {
     const stats = await getAllUserStats(limit);
-    ctx.body = {
+    res.json({
       success: true,
       data: stats,
-    };
+    });
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "获取用户统计失败",
-    };
+    });
   }
 });
 
 // 手动同步所有用户统计数据
-router.post("/api/user-stats/sync", async (ctx: any) => {
+router.post("/api/user-stats/sync", async (req: Request, res: Response) => {
   const userStatsService = getUserStatsService();
   try {
-    ctx.body = {
+    res.json({
       success: true,
       message: "开始同步用户统计数据...",
-    };
+    });
     // 异步执行同步，不阻塞响应
     userStatsService.syncAllUserStats().catch((error: any) => {
       console.error("同步用户统计数据失败:", error);
     });
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "启动同步失败",
-    };
+    });
   }
 });
 
 // 获取价格历史记录
-router.get("/api/price-history", async (ctx: any) => {
+router.get("/api/price-history", async (req: Request, res: Response) => {
   const { getPriceHistory, getLatestPrice } = await import(
     "./storage/priceHistoryRepository"
   );
   try {
-    const startTime = ctx.query.start_time
-      ? new Date(ctx.query.start_time as string)
+    const startTime = req.query.start_time
+      ? new Date(req.query.start_time as string)
       : undefined;
-    const endTime = ctx.query.end_time
-      ? new Date(ctx.query.end_time as string)
+    const endTime = req.query.end_time
+      ? new Date(req.query.end_time as string)
       : undefined;
-    const limit = parseInt(ctx.query.limit as string) || 1000;
+    const limit = parseInt(req.query.limit as string) || 1000;
 
     // 如果没有指定时间范围，返回最新价格
-    if (!startTime && !endTime && !ctx.query.limit) {
+    if (!startTime && !endTime && !req.query.limit) {
       const latest = await getLatestPrice();
-      ctx.body = {
+      res.json({
         success: true,
         data: latest,
-      };
+      });
       return;
     }
 
     const history = await getPriceHistory(startTime, endTime, limit);
-    ctx.body = {
+    res.json({
       success: true,
       data: history,
       count: history.length,
-    };
+    });
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "获取价格历史失败",
-    };
+    });
   }
 });
 
 // 获取系统性能指标
-router.get("/api/metrics", async (ctx: any) => {
+router.get("/api/metrics", async (req: Request, res: Response) => {
   const { getMetricsService } = await import("./services/metricsService");
   const metricsService = getMetricsService();
 
   try {
-    const startTime = ctx.query.start_time
-      ? new Date(ctx.query.start_time as string)
+    const startTime = req.query.start_time
+      ? new Date(req.query.start_time as string)
       : undefined;
-    const endTime = ctx.query.end_time
-      ? new Date(ctx.query.end_time as string)
+    const endTime = req.query.end_time
+      ? new Date(req.query.end_time as string)
       : undefined;
-    const limit = parseInt(ctx.query.limit as string) || 100;
+    const limit = parseInt(req.query.limit as string) || 100;
 
     // 如果指定了时间范围，从数据库获取聚合指标
     if (startTime && endTime) {
@@ -355,30 +347,29 @@ router.get("/api/metrics", async (ctx: any) => {
         startTime,
         endTime
       );
-      ctx.body = {
+      res.json({
         success: true,
         data: aggregated,
-      };
+      });
     } else {
       // 否则返回内存中的实时指标
       const realtime = metricsService.getSystemMetrics(limit);
-      ctx.body = {
+      res.json({
         success: true,
         data: realtime,
         source: "realtime",
-      };
+      });
     }
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "获取性能指标失败",
-    };
+    });
   }
 });
 
 // 执行数据完整性检查
-router.post("/api/integrity/check", async (ctx: any) => {
+router.post("/api/integrity/check", async (req: Request, res: Response) => {
   const { getIntegrityService } = await import("./services/integrityService");
   const integrityService = getIntegrityService();
 
@@ -390,7 +381,7 @@ router.post("/api/integrity/check", async (ctx: any) => {
       await integrityService.saveIntegrityCheckResult(result);
     }
 
-    ctx.body = {
+    res.json({
       success: true,
       data: results,
       summary: {
@@ -399,53 +390,51 @@ router.post("/api/integrity/check", async (ctx: any) => {
         failed: results.filter((r) => !r.passed).length,
         total_issues: results.reduce((sum, r) => sum + r.issues.length, 0),
       },
-    };
+    });
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "执行完整性检查失败",
-    };
+    });
   }
 });
 
 // 获取最近的完整性检查结果
-router.get("/api/integrity/results", async (ctx: any) => {
+router.get("/api/integrity/results", async (req: Request, res: Response) => {
   const sql = (await import("./storage/supabaseClient")).default;
 
   try {
-    const limit = parseInt(ctx.query.limit as string) || 10;
+    const limit = parseInt(req.query.limit as string) || 10;
     const results = await sql`
       SELECT * FROM integrity_checks
       ORDER BY timestamp DESC
       LIMIT ${limit}
     `;
 
-    ctx.body = {
+    res.json({
       success: true,
       data: results,
-    };
+    });
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "获取完整性检查结果失败",
-    };
+    });
   }
 });
 
 // 获取查询性能统计
-router.get("/api/query-performance", async (ctx: any) => {
+router.get("/api/query-performance", async (req: Request, res: Response) => {
   const sql = (await import("./storage/supabaseClient")).default;
 
   try {
-    const startTime = ctx.query.start_time
-      ? new Date(ctx.query.start_time as string)
+    const startTime = req.query.start_time
+      ? new Date(req.query.start_time as string)
       : undefined;
-    const endTime = ctx.query.end_time
-      ? new Date(ctx.query.end_time as string)
+    const endTime = req.query.end_time
+      ? new Date(req.query.end_time as string)
       : undefined;
-    const limit = parseInt(ctx.query.limit as string) || 100;
+    const limit = parseInt(req.query.limit as string) || 100;
 
     let query;
     if (startTime && endTime) {
@@ -483,21 +472,20 @@ router.get("/api/query-performance", async (ctx: any) => {
     }
 
     const stats = await query;
-    ctx.body = {
+    res.json({
       success: true,
       data: stats,
-    };
+    });
   } catch (error: any) {
-    ctx.status = 500;
-    ctx.body = {
+    res.status(500).json({
       success: false,
       error: error.message || "获取查询性能统计失败",
-    };
+    });
   }
 });
 
 // 使用路由
-app.use(router.routes()).use(router.allowedMethods());
+app.use(router);
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;
@@ -505,7 +493,7 @@ const poolAddress = (process.env.POOL_ADDRESS ||
   "0xc6962004f452be9203591991d15f6b388e09e8d0") as `0x${string}`;
 
 app.listen(PORT, async () => {
-  console.log(`🚀 Koa server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Express server is running on http://localhost:${PORT}`);
   console.log(`📝 Health check: http://localhost:${PORT}/health`);
   console.log(`📡 Status API: http://localhost:${PORT}/api/uniswap-v3/status`);
 

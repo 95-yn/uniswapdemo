@@ -1,7 +1,7 @@
 {
-  "name": "koa-server",
+  "name": "express-server",
   "version": "1.0.0",
-  "description": "Koa.js Node.js server",
+  "description": "Express.js Node.js server",
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -10,23 +10,21 @@
     "type-check": "tsc --noEmit"
   },
   "keywords": [
-    "koa",
+    "express",
     "node",
     "typescript"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@koa/router": "^15.1.0",
     "dotenv": "^16.6.1",
     "ethers": "^6.16.0",
+    "express": "^4.21.2",
     "generator-function": "^2.0.1",
-    "koa": "^3.0.0",
     "postgres": "^3.4.7"
   },
   "devDependencies": {
-    "@types/koa": "^3.0.0",
-    "@types/koa-router": "^7.4.8",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.19.1",
     "tsx": "^4.19.2",
     "typescript": "^5.5.4"
