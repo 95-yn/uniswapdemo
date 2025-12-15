@@ -1,0 +1,197 @@
+{
+  "sender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+  "recipient": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+  "amount0": "-3210897388096",
+  "amount1": "10000",
+  "sqrtPriceX96": "4420361315345106826832752",
+  "liquidity": "6088323307994017594",
+  "tick": "-195888",
+  "event": {
+    "filter": "Swap",
+    "emitter": {
+      "target": "0xc6962004f452be9203591991d15f6b388e09e8d0",
+      "interface": {
+        "fragments": [
+          {
+            "type": "event",
+            "inputs": [
+              {
+                "name": "sender",
+                "type": "address",
+                "baseType": "address",
+                "indexed": true,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "recipient",
+                "type": "address",
+                "baseType": "address",
+                "indexed": true,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "amount0",
+                "type": "int256",
+                "baseType": "int256",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "amount1",
+                "type": "int256",
+                "baseType": "int256",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "sqrtPriceX96",
+                "type": "uint160",
+                "baseType": "uint160",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "liquidity",
+                "type": "uint128",
+                "baseType": "uint128",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "tick",
+                "type": "int24",
+                "baseType": "int24",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              }
+            ],
+            "name": "Swap",
+            "anonymous": false
+          }
+        ],
+        "deploy": {
+          "type": "constructor",
+          "inputs": [],
+          "payable": false,
+          "gas": null
+        },
+        "fallback": null,
+        "receive": false
+      },
+      "runner": {},
+      "filters": {},
+      "fallback": null
+    },
+    "log": {
+      "_type": "log",
+      "address": "0xC6962004f452bE9203591991D15f6b388e09E8D0",
+      "blockHash": "0xb82b02959eb5c82572d814b3ecda2116b5e473c0324734e2e6cbedce09324bb9",
+      "blockNumber": 410453624,
+      "data": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffd14679a0dc0000000000000000000000000000000000000000000000000000000000000271000000000000000000000000000000000000000000003a80c445e446300962b70000000000000000000000000000000000000000000000000547e11ca92b6ef3afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd02d0",
+      "index": 42,
+      "removed": false,
+      "topics": [
+        "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67",
+        "0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+        "0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+      ],
+      "transactionHash": "0x3e584a039c7a86c62c25c08c75461ad879b364bc7685c2d52a7c005ff0eb258b",
+      "transactionIndex": 7
+    },
+    "args": [
+      "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "-3210897388096",
+      "10000",
+      "4420361315345106826832752",
+      "6088323307994017594",
+      "-195888"
+    ],
+    "fragment": {
+      "type": "event",
+      "inputs": [
+        {
+          "name": "sender",
+          "type": "address",
+          "baseType": "address",
+          "indexed": true,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "recipient",
+          "type": "address",
+          "baseType": "address",
+          "indexed": true,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "amount0",
+          "type": "int256",
+          "baseType": "int256",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "amount1",
+          "type": "int256",
+          "baseType": "int256",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "sqrtPriceX96",
+          "type": "uint160",
+          "baseType": "uint160",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "liquidity",
+          "type": "uint128",
+          "baseType": "uint128",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "tick",
+          "type": "int24",
+          "baseType": "int24",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        }
+      ],
+      "name": "Swap",
+      "anonymous": false
+    }
+  }
+}
+
+// https://arbiscan.io/tx/0x3e584a039c7a86c62c25c08c75461ad879b364bc7685c2d52a7c005ff0eb258b

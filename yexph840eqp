@@ -1,0 +1,195 @@
+{
+  "sender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+  "recipient": "0x5D0acD0864Ad07ba4E1E0474AE69Da87482e14A9",
+  "amount0": "-129011642213655294",
+  "amount1": "401785056",
+  "sqrtPriceX96": "4420319665446637464059845",
+  "liquidity": "6088174703424670204",
+  "tick": "-195888",
+  "event": {
+    "filter": "Swap",
+    "emitter": {
+      "target": "0xc6962004f452be9203591991d15f6b388e09e8d0",
+      "interface": {
+        "fragments": [
+          {
+            "type": "event",
+            "inputs": [
+              {
+                "name": "sender",
+                "type": "address",
+                "baseType": "address",
+                "indexed": true,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "recipient",
+                "type": "address",
+                "baseType": "address",
+                "indexed": true,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "amount0",
+                "type": "int256",
+                "baseType": "int256",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "amount1",
+                "type": "int256",
+                "baseType": "int256",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "sqrtPriceX96",
+                "type": "uint160",
+                "baseType": "uint160",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "liquidity",
+                "type": "uint128",
+                "baseType": "uint128",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              },
+              {
+                "name": "tick",
+                "type": "int24",
+                "baseType": "int24",
+                "indexed": null,
+                "components": null,
+                "arrayLength": null,
+                "arrayChildren": null
+              }
+            ],
+            "name": "Swap",
+            "anonymous": false
+          }
+        ],
+        "deploy": {
+          "type": "constructor",
+          "inputs": [],
+          "payable": false,
+          "gas": null
+        },
+        "fallback": null,
+        "receive": false
+      },
+      "runner": {},
+      "filters": {},
+      "fallback": null
+    },
+    "log": {
+      "_type": "log",
+      "address": "0xC6962004f452bE9203591991D15f6b388e09E8D0",
+      "blockHash": "0x80ae95d83b78713a964ef87170c07f14e2c5e5ff065c48e15558a07146b4dc5a",
+      "blockNumber": 410449901,
+      "data": "0xfffffffffffffffffffffffffffffffffffffffffffffffffe35a8984df71d020000000000000000000000000000000000000000000000000000000017f2c0e000000000000000000000000000000000000000000003a80a025c1a664321ffc5000000000000000000000000000000000000000000000000547d8aa2e02589fcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd02d0",
+      "index": 16,
+      "removed": false,
+      "topics": [
+        "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67",
+        "0x00000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+        "0x0000000000000000000000005d0acd0864ad07ba4e1e0474ae69da87482e14a9"
+      ],
+      "transactionHash": "0x4bd0ff2a5dc4034de31c6a20df8b1873468c66f533509bdfb01c6014458b8534",
+      "transactionIndex": 6
+    },
+    "args": [
+      "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "0x5D0acD0864Ad07ba4E1E0474AE69Da87482e14A9",
+      "-129011642213655294",
+      "401785056",
+      "4420319665446637464059845",
+      "6088174703424670204",
+      "-195888"
+    ],
+    "fragment": {
+      "type": "event",
+      "inputs": [
+        {
+          "name": "sender",
+          "type": "address",
+          "baseType": "address",
+          "indexed": true,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "recipient",
+          "type": "address",
+          "baseType": "address",
+          "indexed": true,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "amount0",
+          "type": "int256",
+          "baseType": "int256",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "amount1",
+          "type": "int256",
+          "baseType": "int256",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "sqrtPriceX96",
+          "type": "uint160",
+          "baseType": "uint160",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "liquidity",
+          "type": "uint128",
+          "baseType": "uint128",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        },
+        {
+          "name": "tick",
+          "type": "int24",
+          "baseType": "int24",
+          "indexed": null,
+          "components": null,
+          "arrayLength": null,
+          "arrayChildren": null
+        }
+      ],
+      "name": "Swap",
+      "anonymous": false
+    }
+  }
+}
