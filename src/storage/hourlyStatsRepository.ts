@@ -24,9 +24,7 @@ export interface HourlyStatsData {
   max_liquidity?: string | bigint | null;
 }
 
-export async function saveHourlyStats(
-  stats: HourlyStatsData
-): Promise<void> {
+export async function saveHourlyStats(stats: HourlyStatsData): Promise<void> {
   try {
     await sql`
       INSERT INTO hourly_stats (
@@ -54,9 +52,15 @@ export async function saveHourlyStats(
         ${stats.fees_usd}::DECIMAL(18, 2),
         ${stats.unique_addresses},
         ${stats.unique_senders},
-        ${stats.avg_liquidity ? String(stats.avg_liquidity) : null}::DECIMAL(78, 0),
-        ${stats.min_liquidity ? String(stats.min_liquidity) : null}::DECIMAL(78, 0),
-        ${stats.max_liquidity ? String(stats.max_liquidity) : null}::DECIMAL(78, 0)
+        ${
+          stats.avg_liquidity ? String(stats.avg_liquidity) : null
+        }::DECIMAL(78, 0),
+        ${
+          stats.min_liquidity ? String(stats.min_liquidity) : null
+        }::DECIMAL(78, 0),
+        ${
+          stats.max_liquidity ? String(stats.max_liquidity) : null
+        }::DECIMAL(78, 0)
       )
       ON CONFLICT (hour_start) DO UPDATE SET
         hour_end = EXCLUDED.hour_end,
@@ -96,7 +100,7 @@ export async function getHourlyStats(
     ORDER BY hour_start DESC 
     LIMIT ${limit}
   `;
-  return stats;
+  return stats.map((stat) => stat as HourlyStatsData);
 }
 
 export async function getHourlyStatsByDateRange(
@@ -108,6 +112,5 @@ export async function getHourlyStatsByDateRange(
     WHERE hour_start >= ${startDate} AND hour_start < ${endDate}
     ORDER BY hour_start ASC
   `;
-  return stats;
+  return stats.map((stat) => stat as HourlyStatsData);
 }
-

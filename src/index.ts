@@ -132,8 +132,7 @@ async function initializeTokenInfo(
     // 使用重试机制获取 token 地址
     const poolContract = new ethers.Contract(poolAddress, POOL_ABI, provider);
     const [token0Address, token1Address] = await retryRpcCall(
-      () =>
-        Promise.all([poolContract.token0(), poolContract.token1()]),
+      () => Promise.all([poolContract.token0(), poolContract.token1()]),
       3,
       2000,
       "获取 Token 地址"
@@ -164,8 +163,8 @@ async function initializeTokenInfo(
             token1Contract.symbol().catch(() => ""),
           ]),
         3,
-      2000,
-      "获取 Token 信息"
+        2000,
+        "获取 Token 信息"
       );
 
     swapProcessor.setTokenInfo(
@@ -186,7 +185,11 @@ async function initializeTokenInfo(
     );
 
     console.log(
-      `✅ Token 信息初始化完成: token0(${token0Symbol || token0Address}, ${token0Decimals}) / token1(${token1Symbol || token1Address}, ${token1Decimals})`
+      `✅ Token 信息初始化完成: token0(${
+        token0Symbol || token0Address
+      }, ${token0Decimals}) / token1(${
+        token1Symbol || token1Address
+      }, ${token1Decimals})`
     );
 
     // 返回 token 信息
@@ -336,7 +339,7 @@ router.get("/api/price-history", async (ctx: any) => {
 router.get("/api/metrics", async (ctx: any) => {
   const { getMetricsService } = await import("./services/metricsService");
   const metricsService = getMetricsService();
-  
+
   try {
     const startTime = ctx.query.start_time
       ? new Date(ctx.query.start_time as string)
@@ -378,15 +381,15 @@ router.get("/api/metrics", async (ctx: any) => {
 router.post("/api/integrity/check", async (ctx: any) => {
   const { getIntegrityService } = await import("./services/integrityService");
   const integrityService = getIntegrityService();
-  
+
   try {
     const results = await integrityService.checkDataIntegrity();
-    
+
     // 保存检查结果
     for (const result of results) {
       await integrityService.saveIntegrityCheckResult(result);
     }
-    
+
     ctx.body = {
       success: true,
       data: results,
@@ -394,10 +397,7 @@ router.post("/api/integrity/check", async (ctx: any) => {
         total_checks: results.length,
         passed: results.filter((r) => r.passed).length,
         failed: results.filter((r) => !r.passed).length,
-        total_issues: results.reduce(
-          (sum, r) => sum + r.issues.length,
-          0
-        ),
+        total_issues: results.reduce((sum, r) => sum + r.issues.length, 0),
       },
     };
   } catch (error: any) {
@@ -412,7 +412,7 @@ router.post("/api/integrity/check", async (ctx: any) => {
 // 获取最近的完整性检查结果
 router.get("/api/integrity/results", async (ctx: any) => {
   const sql = (await import("./storage/supabaseClient")).default;
-  
+
   try {
     const limit = parseInt(ctx.query.limit as string) || 10;
     const results = await sql`
@@ -420,7 +420,7 @@ router.get("/api/integrity/results", async (ctx: any) => {
       ORDER BY timestamp DESC
       LIMIT ${limit}
     `;
-    
+
     ctx.body = {
       success: true,
       data: results,
@@ -437,7 +437,7 @@ router.get("/api/integrity/results", async (ctx: any) => {
 // 获取查询性能统计
 router.get("/api/query-performance", async (ctx: any) => {
   const sql = (await import("./storage/supabaseClient")).default;
-  
+
   try {
     const startTime = ctx.query.start_time
       ? new Date(ctx.query.start_time as string)
@@ -525,14 +525,8 @@ app.listen(PORT, async () => {
           setTimeout(() => reject(new Error("网络检测超时")), 15000)
         ),
       ]);
-      console.log(
-        `✅ 已连接到网络: ${network.name} (Chain ID: ${network.chainId})`
-      );
     } catch (error: any) {
-      console.warn(
-        "⚠️  无法检测网络，但将继续尝试初始化:",
-        error.message
-      );
+      console.warn("⚠️  无法检测网络，但将继续尝试初始化:", error.message);
       console.warn("   如果后续操作失败，请检查 RPC_URL 是否正确");
     }
 
@@ -589,14 +583,17 @@ app.listen(PORT, async () => {
         .then(async (result) => {
           processingEnd = new Date();
           storageStart = new Date();
-          
+
           console.log("Swap 事件处理结果:", result);
-          
+
           try {
             await saveSwap(result);
-            
+
             // 保存价格历史记录
-            if (result.price_token0 !== null && result.price_token0 !== undefined) {
+            if (
+              result.price_token0 !== null &&
+              result.price_token0 !== undefined
+            ) {
               try {
                 await savePriceHistory({
                   timestamp: result.block_timestamp,
@@ -607,13 +604,13 @@ app.listen(PORT, async () => {
                 console.error("保存价格历史记录失败:", error.message || error);
               }
             }
-            
+
             // 更新用户统计
             await userStatsService.updateUserStatsFromSwap(result);
-            
+
             storageEnd = new Date();
             success = true;
-            
+
             // 记录性能指标
             metricsService.recordEvent({
               event_type: "swap",
@@ -624,15 +621,16 @@ app.listen(PORT, async () => {
               storage_end: storageEnd,
               success: true,
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
           } catch (error: any) {
             storageEnd = new Date();
             success = false;
             errorMessage = error.message || String(error);
-            
+
             // 记录失败指标
             metricsService.recordEvent({
               event_type: "swap",
@@ -644,11 +642,12 @@ app.listen(PORT, async () => {
               success: false,
               error_message: errorMessage,
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
-            
+
             throw error;
           }
         })
@@ -658,9 +657,9 @@ app.listen(PORT, async () => {
           storageEnd = new Date();
           success = false;
           errorMessage = error.message || String(error);
-          
+
           console.error("Swap 事件处理失败:", error);
-          
+
           // 记录失败指标
           metricsService.recordEvent({
             event_type: "swap",
@@ -681,23 +680,23 @@ app.listen(PORT, async () => {
     await eventListener.listenMint(poolAddress, (event) => {
       const eventTimestamp = new Date();
       const processingStart = new Date();
-      
+
       console.log("处理 Mint 事件:", event);
       liquidityProcessor
         .processMint(event)
         .then(async (result) => {
           const processingEnd = new Date();
           const storageStart = new Date();
-          
+
           console.log("Mint 事件处理结果:", result);
-          
+
           try {
             await saveLiquidityEvent(result);
             // 更新用户统计
             await userStatsService.updateUserStatsFromLiquidityEvent(result);
-            
+
             const storageEnd = new Date();
-            
+
             // 记录性能指标
             metricsService.recordEvent({
               event_type: "mint",
@@ -708,9 +707,10 @@ app.listen(PORT, async () => {
               storage_end: storageEnd,
               success: true,
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
           } catch (error: any) {
             const storageEnd = new Date();
@@ -724,9 +724,10 @@ app.listen(PORT, async () => {
               success: false,
               error_message: error.message || String(error),
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
             throw error;
           }
@@ -735,9 +736,9 @@ app.listen(PORT, async () => {
           const processingEnd = new Date();
           const storageStart = new Date();
           const storageEnd = new Date();
-          
+
           console.error("Mint 事件处理失败:", error);
-          
+
           metricsService.recordEvent({
             event_type: "mint",
             event_timestamp: eventTimestamp,
@@ -757,23 +758,23 @@ app.listen(PORT, async () => {
     await eventListener.listenBurn(poolAddress, (event) => {
       const eventTimestamp = new Date();
       const processingStart = new Date();
-      
+
       console.log("处理 Burn 事件:", event);
       liquidityProcessor
         .processBurn(event)
         .then(async (result) => {
           const processingEnd = new Date();
           const storageStart = new Date();
-          
+
           console.log("Burn 事件处理结果:", result);
-          
+
           try {
             await saveLiquidityEvent(result);
             // 更新用户统计
             await userStatsService.updateUserStatsFromLiquidityEvent(result);
-            
+
             const storageEnd = new Date();
-            
+
             metricsService.recordEvent({
               event_type: "burn",
               event_timestamp: eventTimestamp,
@@ -783,9 +784,10 @@ app.listen(PORT, async () => {
               storage_end: storageEnd,
               success: true,
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
           } catch (error: any) {
             const storageEnd = new Date();
@@ -799,9 +801,10 @@ app.listen(PORT, async () => {
               success: false,
               error_message: error.message || String(error),
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
             throw error;
           }
@@ -810,9 +813,9 @@ app.listen(PORT, async () => {
           const processingEnd = new Date();
           const storageStart = new Date();
           const storageEnd = new Date();
-          
+
           console.error("Burn 事件处理失败:", error);
-          
+
           metricsService.recordEvent({
             event_type: "burn",
             event_timestamp: eventTimestamp,
@@ -832,23 +835,23 @@ app.listen(PORT, async () => {
     await eventListener.listenCollect(poolAddress, (event) => {
       const eventTimestamp = new Date();
       const processingStart = new Date();
-      
+
       console.log("处理 Collect 事件:", event);
       liquidityProcessor
         .processCollect(event)
         .then(async (result) => {
           const processingEnd = new Date();
           const storageStart = new Date();
-          
+
           console.log("Collect 事件处理结果:", result);
-          
+
           try {
             await saveLiquidityEvent(result);
             // 更新用户统计
             await userStatsService.updateUserStatsFromLiquidityEvent(result);
-            
+
             const storageEnd = new Date();
-            
+
             metricsService.recordEvent({
               event_type: "collect",
               event_timestamp: eventTimestamp,
@@ -858,9 +861,10 @@ app.listen(PORT, async () => {
               storage_end: storageEnd,
               success: true,
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
           } catch (error: any) {
             const storageEnd = new Date();
@@ -874,9 +878,10 @@ app.listen(PORT, async () => {
               success: false,
               error_message: error.message || String(error),
               transaction_hash: result.transaction_hash,
-              block_number: typeof result.block_number === "bigint" 
-                ? Number(result.block_number) 
-                : result.block_number,
+              block_number:
+                typeof result.block_number === "bigint"
+                  ? Number(result.block_number)
+                  : result.block_number,
             });
             throw error;
           }
@@ -885,9 +890,9 @@ app.listen(PORT, async () => {
           const processingEnd = new Date();
           const storageStart = new Date();
           const storageEnd = new Date();
-          
+
           console.error("Collect 事件处理失败:", error);
-          
+
           metricsService.recordEvent({
             event_type: "collect",
             event_timestamp: eventTimestamp,

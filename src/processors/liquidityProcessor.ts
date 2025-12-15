@@ -43,8 +43,16 @@ export class LiquidityProcessor {
     this.token0Decimals = token0Decimals;
     this.token1Decimals = token1Decimals;
     this.priceCalculator.setTokenInfo(
-      { address: token0Address || "", decimals: token0Decimals, symbol: token0Symbol },
-      { address: token1Address || "", decimals: token1Decimals, symbol: token1Symbol }
+      {
+        address: token0Address || "",
+        decimals: token0Decimals,
+        symbol: token0Symbol,
+      },
+      {
+        address: token1Address || "",
+        decimals: token1Decimals,
+        symbol: token1Symbol,
+      }
     );
   }
 
@@ -53,7 +61,7 @@ export class LiquidityProcessor {
    */
   private async getBlockTimestamp(blockNumber: number): Promise<Date> {
     const block = await this.provider.getBlock(blockNumber);
-    return new Date(block.timestamp * 1000);
+    return new Date(block!.timestamp * 1000);
   }
 
   /**
@@ -266,7 +274,9 @@ export class LiquidityProcessor {
       const priceService = getPriceService();
 
       console.log(
-        `💰 开始获取价格: token0(${this.token0Symbol || "N/A"}) / token1(${this.token1Symbol || "N/A"})`
+        `💰 开始获取价格: token0(${this.token0Symbol || "N/A"}) / token1(${
+          this.token1Symbol || "N/A"
+        })`
       );
 
       // 并行获取两个 token 的价格
@@ -283,8 +293,13 @@ export class LiquidityProcessor {
         ),
       ]);
 
-      const usdValue = priceService.calculateUSDValue(amount0, amount1, price0, price1);
-      
+      const usdValue = priceService.calculateUSDValue(
+        amount0,
+        amount1,
+        price0,
+        price1
+      );
+
       if (usdValue !== null) {
         console.log(`✅ USD 值计算成功: $${usdValue.toFixed(2)}`);
       } else {
