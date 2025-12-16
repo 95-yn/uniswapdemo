@@ -83,7 +83,7 @@ PORT=8080 npm run dev
 
 ## 开发
 
-项目使用 `tsx` 进行 TypeScript 文件的直接运行和热重载，无需手动编译。
+项目使用 `tsx ` 进行 TypeScript 文件的直接运行和热重载，无需手动编译。
 
 ## 许可证
 
