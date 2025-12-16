@@ -65,6 +65,23 @@ export class LiquidityProcessor {
   }
 
   /**
+   * 获取真实的交易发送者（从交易收据中获取）
+   */
+  private async getActualSender(
+    transactionHash: string
+  ): Promise<string | null> {
+    try {
+      const receipt = await this.provider.getTransactionReceipt(
+        transactionHash
+      );
+      return receipt?.from || null;
+    } catch (error) {
+      console.error("获取真实 sender 失败:", error);
+      return null;
+    }
+  }
+
+  /**
    * 处理 Mint 事件，转换为数据库格式
    */
   async processMint(mintEvent: MintEventV3): Promise<LiquidityEventData> {
@@ -98,6 +115,9 @@ export class LiquidityProcessor {
 
     const block_timestamp = await this.getBlockTimestamp(block_number);
 
+    // 获取真实的 sender（交易发起者）
+    const actualSender = await this.getActualSender(transaction_hash);
+
     // 计算 USD 值
     const usdValue = await this.calculateUSDValue(
       amount0_readable,
@@ -111,7 +131,7 @@ export class LiquidityProcessor {
       log_index,
       event_type: "MINT",
       owner,
-      sender,
+      sender: actualSender || sender, // 优先使用真实的 sender
       liquidity_delta: amount.toString(),
       tick_lower,
       tick_upper,
@@ -158,6 +178,9 @@ export class LiquidityProcessor {
 
     const block_timestamp = await this.getBlockTimestamp(block_number);
 
+    // 获取真实的 sender（交易发起者）
+    const actualSender = await this.getActualSender(transaction_hash);
+
     // 计算 USD 值
     const usdValue = await this.calculateUSDValue(
       amount0_readable,
@@ -171,7 +194,7 @@ export class LiquidityProcessor {
       log_index,
       event_type: "BURN",
       owner,
-      sender: null, // Burn 事件没有 sender
+      sender: actualSender, // 使用真实的 sender（交易发起者）
       liquidity_delta: amount.toString(),
       tick_lower,
       tick_upper,
@@ -220,6 +243,9 @@ export class LiquidityProcessor {
 
     const block_timestamp = await this.getBlockTimestamp(block_number);
 
+    // 获取真实的 sender（交易发起者）
+    const actualSender = await this.getActualSender(transaction_hash);
+
     // 计算 USD 值
     const usdValue = await this.calculateUSDValue(
       amount0_readable,
@@ -233,7 +259,7 @@ export class LiquidityProcessor {
       log_index,
       event_type: "COLLECT",
       owner,
-      sender: recipient, // Collect 事件中 recipient 作为 sender
+      sender: actualSender || recipient, // 优先使用真实的 sender，失败时使用 recipient
       liquidity_delta: "0", // Collect 事件不改变流动性
       tick_lower,
       tick_upper,
@@ -248,7 +274,7 @@ export class LiquidityProcessor {
   }
 
   /**
-   * 计算 USD 值
+   * 计算 USD 值（优先使用 Quoter，失败时回退到 CoinGecko）
    */
   private async calculateUSDValue(
     amount0: number,
@@ -260,7 +286,37 @@ export class LiquidityProcessor {
         return null;
       }
 
-      // 获取链 ID
+      if (
+        this.token0Decimals === undefined ||
+        this.token1Decimals === undefined
+      ) {
+        console.warn("⚠️  Token 精度未设置，无法计算 USD 值");
+        return null;
+      }
+
+      // 优先使用 Quoter 服务（链上实时价格）
+      try {
+        const quoterService = getQuoterService(this.provider);
+        const usdValue = await quoterService.calculateUSDValue(
+          amount0,
+          amount1,
+          this.token0Address,
+          this.token1Address,
+          this.token0Decimals,
+          this.token1Decimals
+        );
+
+        if (usdValue !== null) {
+          console.log(
+            `✅ 通过 Quoter 计算 USD 值成功: $${usdValue.toFixed(2)}`
+          );
+          return usdValue;
+        }
+      } catch (error: any) {
+        console.warn("⚠️  Quoter 服务失败，回退到 CoinGecko:", error.message);
+      }
+
+      // 回退到 CoinGecko API
       if (!this.chainId) {
         try {
           const network = await this.provider.getNetwork();
@@ -274,9 +330,9 @@ export class LiquidityProcessor {
       const priceService = getPriceService();
 
       console.log(
-        `💰 开始获取价格: token0(${this.token0Symbol || "N/A"}) / token1(${
-          this.token1Symbol || "N/A"
-        })`
+        `💰 使用 CoinGecko 获取价格: token0(${
+          this.token0Symbol || "N/A"
+        }) / token1(${this.token1Symbol || "N/A"})`
       );
 
       // 并行获取两个 token 的价格
@@ -293,15 +349,19 @@ export class LiquidityProcessor {
         ),
       ]);
 
+      // 对于流动性事件（Mint/Burn），使用总和（useSum = true）
       const usdValue = priceService.calculateUSDValue(
         amount0,
         amount1,
         price0,
-        price1
+        price1,
+        true // 使用总和而不是平均值
       );
 
       if (usdValue !== null) {
-        console.log(`✅ USD 值计算成功: $${usdValue.toFixed(2)}`);
+        console.log(
+          `✅ 通过 CoinGecko 计算 USD 值成功: $${usdValue.toFixed(2)}`
+        );
       } else {
         console.warn(
           `⚠️  USD 值计算失败: price0=${price0}, price1=${price1}, amount0=${amount0}, amount1=${amount1}`

@@ -223,8 +223,8 @@ export class QuoterService {
         if (price0 !== null && price1 !== null) {
           const value0 = Math.abs(amount0) * price0;
           const value1 = Math.abs(amount1) * price1;
-          // 取平均值（更准确）
-          usdValue = (value0 + value1) / 2;
+          // 使用总和（对于流动性事件，用户同时提供了两种 token）
+          usdValue = value0 + value1;
           console.log(
             `💰 通过价格计算 USD 值: $${usdValue.toFixed(2)} (price0: $${price0.toFixed(6)}, price1: $${price1.toFixed(6)})`
           );

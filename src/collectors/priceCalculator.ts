@@ -64,7 +64,7 @@ export class PriceCalculator {
    * @returns Swap 类型
    */
   determineSwapType(amount0: bigint): "BUY" | "SELL" {
-    return amount0 < 0n ? "SELL" : "BUY";
+    return amount0 > 0n ? "SELL" : "BUY";
   }
 
   /**

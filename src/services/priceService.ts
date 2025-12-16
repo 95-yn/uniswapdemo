@@ -248,13 +248,15 @@ export class PriceService {
    * @param amount1 token1 数量（可读格式）
    * @param price0 token0 USD 价格
    * @param price1 token1 USD 价格
+   * @param useSum 是否使用总和（true）还是平均值（false）。对于流动性事件（Mint/Burn）应使用总和，对于 Swap 事件可使用平均值
    * @returns USD 总值
    */
   calculateUSDValue(
     amount0: number,
     amount1: number,
     price0: number | null,
-    price1: number | null
+    price1: number | null,
+    useSum: boolean = false
   ): number | null {
     let value0 = 0;
     let value1 = 0;
@@ -267,9 +269,10 @@ export class PriceService {
       value1 = Math.abs(amount1) * price1;
     }
 
-    // 如果两个价格都有，取平均值（更准确）
+    // 如果两个价格都有
     if (price0 !== null && price1 !== null) {
-      return (value0 + value1) / 2;
+      // 对于流动性事件（Mint/Burn），使用总和；对于 Swap 事件，使用平均值
+      return useSum ? value0 + value1 : (value0 + value1) / 2;
     }
 
     // 如果只有一个价格，使用那个
